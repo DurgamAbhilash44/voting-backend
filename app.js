@@ -11,7 +11,7 @@ app.use(express.json());  // for parsing request body
 
 // Base route
 app.get('/', function(req, res) {
-    res.send('Welcome to our Hotel');
+    res.send('Welcome to our voting application');
 });
 
 app.use('/api',UserRoutes)
