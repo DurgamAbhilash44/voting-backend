@@ -16,7 +16,7 @@ const adminRole = async (userId) => {
 };
 
 // Route to save a new Candidate
-router.post('/', AuthMiddleware, async (req, res) => {
+router.post('/admin', AuthMiddleware, async (req, res) => {
     try {
         const { id } = req.user;  // Extract user ID from the JWT token
 
@@ -35,7 +35,24 @@ router.post('/', AuthMiddleware, async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: "Error occurred while saving", error: err.message });
     }
-});
+}); // ✅ This closing brace and parenthesis were missing
+
+
+    router.get('/allcandidates', AuthMiddleware,async (req, res) => {
+        try {
+            
+        
+
+            const candidates = await Candidate.find();  // Fetch all candidates from the database
+
+            res.status(200).json({ candidates });  // Respond with the list of candidates
+        } catch (error) {
+            
+            console.error(error);  // Log the error for debugging
+            res.status(500).json({ message: 'Error occurred while fetching candidates', error: error.message });
+        }
+
+    })
 
 // Route to update an existing Candidate
 router.put('/:candidateId', AuthMiddleware, async (req, res) => {
@@ -136,8 +153,14 @@ router.post('/vote/:candidateId', AuthMiddleware, async (req, res) => {
     }
 });
 
-router.get('/vote/count', async (req, res) => {
+router.get('/vote/count',AuthMiddleware, async (req, res) => {
     try {
+        const { id } = req.user;  // Extract user ID from the JWT token
+        const isAdmin = await adminRole(id);  // Check if the user has admin role
+
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Role is not admin" });
+        }
         // Get the candidates sorted by vote count in descending order
         const candidates = await Candidate.find().sort({ voteCount: 'desc' });
 
@@ -158,9 +181,6 @@ router.get('/vote/count', async (req, res) => {
         res.status(500).json({ message: 'Error occurred while fetching vote count', error: error.message });
     }
 });
-
-
-
 
 
 

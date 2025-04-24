@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const db = require('./db');
 require('dotenv').config();
 const UserRoutes=require('./routes/UserRoutes')
@@ -7,6 +8,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());  // for parsing request body
+app.use(cors());
 
 
 // Base route

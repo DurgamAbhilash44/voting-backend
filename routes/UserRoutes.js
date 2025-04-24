@@ -1,28 +1,49 @@
 const express = require('express');
 const User = require('./../model/User');
 const { AuthMiddleware, generateToken } = require('./../jwt');
+const Candidate = require('../model/Candidate');
 
 const router = express.Router();
 
 // Route to save a new User
+
+// Check if the user has admin role
+const Role = async (userId) => {
+    try {
+        const user = await User.findById(userId);  // Check the role from the User model
+        return user && user.role;  // Return true if user has admin role
+    } catch (error) {
+        return false;  // If there's an error (e.g., user not found), return false
+    }
+};
+
 router.post('/register', async (req, res) => {
     try {
         const data = req.body;
-        const newUser = new User(data);
+        console.log("Incoming registration data:", data);
 
+        // Check if Aadhar Card Number already exists
+        const existingUser = await User.findOne({ aadharCardNumber: data.aadharCardNumber });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Aadhar card number already registered.' });
+        }
+
+        // Create and save new user if no duplicates
+        const newUser = new User(data);
         const savedUser = await newUser.save();
 
+        // Prepare token payload
         const payload = {
-            id: savedUser._id,  // Use _id from MongoDB
-            username: savedUser.username
+            id: savedUser._id,
+            name: savedUser.name // Adjust field name
         };
 
         const token = generateToken(payload);
-        console.log(token);
 
-        res.status(200).json({ saved: savedUser, token: token });
+        // Respond with user data and token
+        res.status(200).json({ saved: savedUser, token });
     } catch (err) {
-        // Send a detailed error message
+        console.error("Registration Error:", err);
         res.status(500).json({ message: "Error occurred while saving", error: err.message });
     }
 });
@@ -55,11 +76,19 @@ router.post('/login', async (req, res) => {
 
         // Generate token (ensure generateToken is defined correctly)
         const token = generateToken(payload);
+        const role= await Role(user.id);  // Check the role of the user
+        
+        const totalvoted=await User.countDocuments({isVoted:true});
+        const totalusers=await User.countDocuments({role:'voter'});
+        const notvoted=totalusers-totalvoted;
+        const candidates=await Candidate.countDocuments(); 
 
-        console.log(token);
+
+    
+        console.log(candidates)
 
         // Send the token in the response
-        res.status(200).json({ token });
+        res.status(200).json({ token,role ,totalvoted,totalusers,notvoted,candidates });  // Include role in the response
 
     } catch (error) {
         // Send error with a proper message
