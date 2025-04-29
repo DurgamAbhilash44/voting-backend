@@ -3,7 +3,7 @@ require('dotenv').config();  // Load environment variables
 const mongoose = require('mongoose');
 
 // Use the URL from the .env file
-const mongoUrl ='mongodb://localhost:27017/voting';
+const mongoUrl =process.env.MONGO_URI
 
 // Connect to MongoDB using mongoose
 mongoose.connect(mongoUrl);

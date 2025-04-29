@@ -84,8 +84,7 @@ router.post('/login', async (req, res) => {
         const candidates=await Candidate.countDocuments(); 
 
 
-    
-        console.log(candidates)
+   
 
         // Send the token in the response
         res.status(200).json({ token,role ,totalvoted,totalusers,notvoted,candidates });  // Include role in the response
